@@ -1,2 +1,13 @@
-# JavaScript-API
-The official JavaScript API for TitanCast
+# TitanCast JavaScript API
+The official TitanCast JavaScript API which can be used to develop content for the TitanCast application.
+
+##Building From Source
+####Getting build-tools
+> ``npm install``
+
+will install node modules required for building the code
+
+####Building
+> ``grunt``
+
+the working code will be placed in the **builds** directory along with a sourcemap.

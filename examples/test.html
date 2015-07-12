@@ -1,0 +1,75 @@
+<!doctype html>
+    <html>
+        <head>
+            <title>TitanCast Reborn Example</title>
+            <script src="titancast-api.js"></script>
+            <script>
+                var logger;
+                function log(message){
+                    logger.value += message + "\n"; 
+                }
+            </script>
+        </head>
+        <body style="font-family:Arial">
+            <h1>Welcome to the <i><u>TitanCast Demo</u></i></h1>
+            <h2>Logs:</h2>
+            <textarea id="log" disabled></textarea>
+            <h2><a href="#" onclick="connect()">Connect Now</a></h2>
+            <script>
+                logger = document.getElementById("log");
+                log( window.TitanCastApplication ? "API probably loaded" : "API definitely not loaded" );
+                
+                
+                
+                var myApp = new TitanCastApplication(
+                    "Test Application",
+                    "TEST",
+                    "http://192.168.0.9/JSOLD/examples/controller.html",
+                    "#none#");
+                
+                function connect(){
+
+                    log("opening connection prompt...");
+                    
+                    var Device = myApp.createDevice("192.168.0.8");
+                    
+                    Device.setEvent("connectionError", function(){
+                        console.log("connection error", arguments);
+                    });
+                    Device.setEvent("connectionClosed", function(){
+                        console.log("connection closed", arguments);
+                    });
+                    
+                    var lastTime = -1, results = [];
+                    
+                    Device.setEvent("customData", function(data){
+                        
+                        if(lastTime == -1){
+                            lastTime = Date.now();
+                        }
+                        
+                        results.push(Date.now() - lastTime);
+                        
+                        lastTime = Date.now();
+                    
+                        if(results.length == 2000){
+                            
+                            var sum = 0;
+                            for(x in results){
+                                sum += results[x];
+                            }
+                            
+                            console.log(results);
+                            log("the average is: " + ( sum / results.length ) );
+                            return;
+                            
+                        }
+                        
+                        Device.send( Packet.create("custom_data", "latencyask") );
+                        
+                    });
+                }
+                
+            </script>
+        </body>
+    </html>

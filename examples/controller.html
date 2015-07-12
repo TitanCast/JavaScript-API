@@ -1,0 +1,32 @@
+<!doctype html>
+    <html>
+        <head>
+            
+            <script>
+                
+                var dat = {
+                        data : [
+                            "hi"
+                        ]
+                    };
+                
+                dat = JSON.stringify(dat);
+                
+                function pop(){
+
+                    device.sendData( dat );
+                    
+                }
+                
+                function customDataReceived(data){
+                    
+                    device.sendData( dat );
+                    
+                }
+            </script>
+            
+        </head>
+        <body>
+            <h1><a href="#" onclick="pop()">CAT DOGS!</a></h1>
+        </body>
+    </html>
