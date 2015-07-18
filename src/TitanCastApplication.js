@@ -3,8 +3,12 @@ var TitanCastApplication = function(appName, appDesc, appCastURL, icon){
     this.appName = appName;
     this.appDesc = appDesc;
     this.appCastURL = appCastURL;
-    this.icon = icon.image ? icon.image : icon;
-    
+
+    if(icon)
+      this.icon = icon.image ? icon.image : icon;
+    else
+      this.icon = "#none#";
+
 };
 
 TitanCastApplication.prototype.createDevice = function(uri, options){

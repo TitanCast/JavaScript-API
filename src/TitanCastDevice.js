@@ -6,7 +6,7 @@ var ConnectionStates = {
 
 var TitanCastDevice = function(uri, application, options) {
 
-    this.uri = uri;
+    this.uri = uri.trim();
     this.application = application;
     this.connectionState = ConnectionStates.NOT_CONNECTED;
     this.deviceDetails = [];
@@ -17,8 +17,20 @@ var TitanCastDevice = function(uri, application, options) {
 
     this.events = [];
 
+    if (this.uri.indexOf(".") == -1) {
+        var chunks = this.uri.split(" ");
+
+        var parts = [];
+
+        for (chunk in chunks) {
+            parts.push(parseInt(chunks[chunk], 16));
+        }
+
+        this.uri = parts.join(".");
+    }
+
     //websocket stuffs
-    this.websocket = new WebSocket("ws://" + uri + ":" + this.port);
+    this.websocket = new WebSocket("ws://" + this.uri + ":" + this.port);
 
     this.onmessage = function(e) {
 
@@ -133,10 +145,10 @@ TitanCastDevice.prototype.enableAccelerometer = function() {
     this.send(Packet.create("disable-accelerometer"));
 }
 
-TitanCastDevice.prototype.setAccelerometerFrequency = function(fx){
-    this.send( Packet.create("set_accelerometer_speed", fx) );
+TitanCastDevice.prototype.setAccelerometerFrequency = function(fx) {
+    this.send(Packet.create("set_accelerometer_speed", fx));
 }
 
-TitanCastDevice.prototype.setAccelerometerCap = function(cap){
-    this.send( Packet.create("set_accelerometer_cap", cap) );
+TitanCastDevice.prototype.setAccelerometerCap = function(cap) {
+    this.send(Packet.create("set_accelerometer_cap", cap));
 }
