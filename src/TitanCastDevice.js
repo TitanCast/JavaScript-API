@@ -1,9 +1,3 @@
-var ConnectionStates = {
-    NOT_CONNECTED: "not connected",
-    CONNECTED: "connected",
-    AWAITING_RESPONSE: "awaiting response"
-};
-
 var TitanCastDevice = function(uri, application, options) {
 
     this.uri = uri.trim();
@@ -68,12 +62,12 @@ var TitanCastDevice = function(uri, application, options) {
                 ));
 
                 this.connectionState = ConnectionStates.CONNECTED;
-                this.triggerEvent("acceptConnect");
+                this.triggerEvent("connect accept");
 
             } else if (packet.getType() == "reject_connect_request") {
 
                 this.connectionState = ConnectionStates.NOT_CONNECTED;
-                this.triggerEvent("rejectConnect");
+                this.triggerEvent("connect reject");
 
             }
 
@@ -81,23 +75,40 @@ var TitanCastDevice = function(uri, application, options) {
 
         if (this.connectionState == ConnectionStates.CONNECTED) {
 
-            if (packet.getType() == "custom_data") {
-                this.triggerEvent("customData", packet.getData());
-            }
+            switch(packet.getType()){
 
+                case "custom_data":
+                    this.triggerEvent("custom data", [packet.getData()]);
+                    break;
+                case "accelerometer-update":
+
+                    var acdata = packet.getData();
+                    acdata = {
+                        x : parseFloat(acdata[0].substr(2)),
+                        y : parseFloat(acdata[1].substr(2)),
+                        z : parseFloat(acdata[2].substr(2))
+                    };
+
+                    this.triggerEvent("accelerometer data", [acdata]);
+                    break;
+                default:
+                    console.log("unknown packet", packet);
+                    break;
+
+            }
         }
 
     }
 
     this.onclose = function() {
 
-        this.triggerEvent("connectionClosed");
+        this.triggerEvent("connection closed");
 
     }
 
     this.onerror = function(e) {
 
-        this.triggerEvent("connectionError", e);
+        this.triggerEvent("connection error", e);
 
     }
 
@@ -121,10 +132,12 @@ TitanCastDevice.prototype.send = function(packet) {
 
 }
 
-TitanCastDevice.prototype.triggerEvent = function(event) {
+TitanCastDevice.prototype.triggerEvent = function(event, args) {
 
     if (this.events[event]) {
-        this.events[event](([].slice.apply(arguments)).slice(1));
+        this.events[event].apply(this, args);
+    }else{
+        return false;
     }
 
 }
@@ -138,14 +151,14 @@ TitanCastDevice.prototype.removeEvent = function(name) {
 }
 
 TitanCastDevice.prototype.enableAccelerometer = function() {
-    this.send(Packet.create("enable-accelerometer"));
+    this.send(Packet.create("enable_accelerometer"));
 }
 
-TitanCastDevice.prototype.enableAccelerometer = function() {
-    this.send(Packet.create("disable-accelerometer"));
+TitanCastDevice.prototype.disableAccelerometer = function() {
+    this.send(Packet.create("disable_accelerometer"));
 }
 
-TitanCastDevice.prototype.setAccelerometerFrequency = function(fx) {
+TitanCastDevice.prototype.setAccelerometerSpeed = function(fx) {
     this.send(Packet.create("set_accelerometer_speed", fx));
 }
 
