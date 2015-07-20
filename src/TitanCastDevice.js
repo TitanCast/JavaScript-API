@@ -7,7 +7,7 @@ var TitanCastDevice = function(uri, application, options) {
 
     options = options || {};
 
-    this.port = options.port || 25517;
+    this.port = options.port || TitanCastAPI.globalOptions.port;
 
     this.events = [];
 
@@ -26,9 +26,26 @@ var TitanCastDevice = function(uri, application, options) {
     //websocket stuffs
     this.websocket = new WebSocket("ws://" + this.uri + ":" + this.port);
 
+    this.debugging = options.debugging || TitanCastAPI.globalOptions.debugging;
+
+    this.debuggingStore = {
+        byteLength : 0,
+        packetLength : 0
+    };
+
+    if(this.debugging){
+        var self = this;
+        setInterval( function(){ debugTransfer(self) } , 1000 );
+    }
+
     this.onmessage = function(e) {
 
         var packet = Packet.parse(e.data);
+
+        if(this.debugging){
+            this.debuggingStore.byteLength += e.data.length;
+            this.debuggingStore.packetLength++;
+        }
 
         if (this.connectionState == ConnectionStates.NOT_CONNECTED) {
 
@@ -62,12 +79,14 @@ var TitanCastDevice = function(uri, application, options) {
                 ));
 
                 this.connectionState = ConnectionStates.CONNECTED;
-                this.triggerEvent("connect accept");
+                this.triggerEvent("connectAccept");
+                return;
 
             } else if (packet.getType() == "reject_connect_request") {
 
                 this.connectionState = ConnectionStates.NOT_CONNECTED;
-                this.triggerEvent("connect reject");
+                this.triggerEvent("connectReject");
+                return;
 
             }
 
@@ -78,21 +97,28 @@ var TitanCastDevice = function(uri, application, options) {
             switch(packet.getType()){
 
                 case "custom_data":
-                    this.triggerEvent("custom data", [packet.getData()]);
+                    this.triggerEvent("customData", [packet.getData()]);
                     break;
                 case "accelerometer-update":
 
                     var acdata = packet.getData();
                     acdata = {
-                        x : parseFloat(acdata[0].substr(2)),
-                        y : parseFloat(acdata[1].substr(2)),
-                        z : parseFloat(acdata[2].substr(2))
+                        x : parseFloat(acdata[0]),
+                        y : parseFloat(acdata[1]),
+                        z : parseFloat(acdata[2])
                     };
 
-                    this.triggerEvent("accelerometer data", [acdata]);
+                    this.triggerEvent("accelerometerData", [acdata]);
+                    break;
+                case "view-loaded":
+
+                    this.triggerEvent("viewLoaded");
+
                     break;
                 default:
-                    console.log("unknown packet", packet);
+
+                    this.triggerEvent("badPacket");
+
                     break;
 
             }
@@ -102,13 +128,13 @@ var TitanCastDevice = function(uri, application, options) {
 
     this.onclose = function() {
 
-        this.triggerEvent("connection closed");
+        this.triggerEvent("connectionClosed");
 
     }
 
     this.onerror = function(e) {
 
-        this.triggerEvent("connection error", e);
+        this.triggerEvent("connectionError", e);
 
     }
 
@@ -142,11 +168,11 @@ TitanCastDevice.prototype.triggerEvent = function(event, args) {
 
 }
 
-TitanCastDevice.prototype.setEvent = function(name, fn) {
+TitanCastDevice.prototype.on = function(name, fn) {
     this.events[name] = fn;
 }
 
-TitanCastDevice.prototype.removeEvent = function(name) {
+TitanCastDevice.prototype.off = function(name) {
     this.events[name] = function() {};
 }
 
@@ -162,6 +188,19 @@ TitanCastDevice.prototype.setAccelerometerSpeed = function(fx) {
     this.send(Packet.create("set_accelerometer_speed", fx));
 }
 
-TitanCastDevice.prototype.setAccelerometerCap = function(cap) {
-    this.send(Packet.create("set_accelerometer_cap", cap));
+TitanCastDevice.prototype.setOrientation = function(orientation) {
+
+    this.send(Packet.create("set_orientation", orientation));
+
+}
+
+debugTransfer = function(obj){
+
+    console.log("packets", obj.debuggingStore.packetLength);
+    console.log("kB", obj.debuggingStore.byteLength / 1024);
+    console.log("");
+
+    obj.debuggingStore.packetLength = 0;
+    obj.debuggingStore.byteLength = 0;
+
 }
