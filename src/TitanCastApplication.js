@@ -3,8 +3,6 @@ var TitanCastApplication = function(appName, appDesc, appCastURL, icon, cb) {
     this.appName = appName;
     this.appDesc = appDesc;
     this.appCastURL = appCastURL;
-    cb = cb || function() {};
-
     this.setIcon(icon, cb);
 
 };
@@ -14,7 +12,7 @@ TitanCastApplication.prototype.createDevice = function(uri, options) {
 }
 
 TitanCastApplication.prototype.setIcon = function(icon, cb) {
-
+    
     if (icon) {
 
         var _app = this;
@@ -26,13 +24,15 @@ TitanCastApplication.prototype.setIcon = function(icon, cb) {
 
                 TitanCastUtils.base64Loaded(icon, function(data) {
                     _app.icon = data;
-                    cb();
+                    var _cb = cb || _app.onIconLoad || function(){};
+                    _cb();
                 });
 
             } else {
                 TitanCastUtils.base64Img(icon, function(data) {
                     _app.icon = data;
-                    cb();
+                    var _cb = cb || _app.onIconLoad || function(){};
+                    _cb();
                 });
 
             }
@@ -43,7 +43,8 @@ TitanCastApplication.prototype.setIcon = function(icon, cb) {
 
                 TitanCastUtils.base64URL(icon.substr(1), function(data) {
                     _app.icon = data.substr(22);
-                    cb();
+                    var _cb = cb || _app.onIconLoad || function(){};
+                    _cb();
                 });
 
             } else {
