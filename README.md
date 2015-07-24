@@ -16,4 +16,4 @@ the working code will be placed in the **builds** directory along with a sourcem
 
 ##Documentation
 
-You can find documentation and examples in the [Wiki.](https://github.com/TitanCast/JavaScript-API/wiki);
+You can find documentation and examples in the [Wiki.](https://github.com/TitanCast/JavaScript-API/wiki)
