@@ -5,21 +5,6 @@ function PacketClass(type, data) {
 
 }
 
-PacketClass.prototype.getType = function() {
-    return this.type;
-}
-
-PacketClass.prototype.setType = function(type) {
-    this.type = type;
-}
-
-PacketClass.prototype.getData = function() {
-    return this.data;
-}
-
-PacketClass.prototype.setData = function(data) {
-    this.data = data;
-}
 
 PacketClass.prototype.serialize = function() {
 

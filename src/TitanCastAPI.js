@@ -5,4 +5,4 @@ TitanCastAPI.globalOptions = {
     debugging : false    //if true, monitoring of data will occur.
 };
 
-TitanCastAPI.version = "0.1.2";
+TitanCastAPI.version = "0.1.3";

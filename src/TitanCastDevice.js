@@ -49,17 +49,19 @@ var TitanCastDevice = function(uri, application, options) {
 
         if (this.connectionState == ConnectionStates.NOT_CONNECTED) {
 
-            if (packet.getType() == "device_details") {
+            if (packet.type == "device_details") {
 
-                this.deviceDetails = packet.getData();
+                this.deviceDetails = packet.data;
 
                 this.send(Packet.create("request_connect", [
 
-                    this.application.getAppName(),
-                    this.application.getAppDesc(),
-                    this.application.getIcon()
+                    this.application.appName,
+                    this.application.appDesc,
+                    this.application.icon
 
                 ]));
+                
+                console.log(this.application.icon);
 
                 this.connectionState = ConnectionStates.AWAITING_RESPONSE;
 
@@ -71,18 +73,18 @@ var TitanCastDevice = function(uri, application, options) {
 
         if (this.connectionState == ConnectionStates.AWAITING_RESPONSE) {
 
-            if (packet.getType() == "accept_connect_request") {
+            if (packet.type == "accept_connect_request") {
 
                 this.send(Packet.create(
                     "cast_view_data",
-                    this.application.getAppCastURL()
+                    this.application.appCastURL
                 ));
 
                 this.connectionState = ConnectionStates.CONNECTED;
                 this.triggerEvent("connectAccept");
                 return;
 
-            } else if (packet.getType() == "reject_connect_request") {
+            } else if (packet.type == "reject_connect_request") {
 
                 this.connectionState = ConnectionStates.NOT_CONNECTED;
                 this.triggerEvent("connectReject");
@@ -94,14 +96,14 @@ var TitanCastDevice = function(uri, application, options) {
 
         if (this.connectionState == ConnectionStates.CONNECTED) {
 
-            switch(packet.getType()){
+            switch(packet.type){
 
                 case "custom_data":
-                    this.triggerEvent("customData", [packet.getData()]);
+                    this.triggerEvent("customData", [packet.data]);
                     break;
                 case "accelerometer-update":
 
-                    var acdata = packet.getData();
+                    var acdata = packet.data;
                     acdata = {
                         x : parseFloat(acdata[0]),
                         y : parseFloat(acdata[1]),

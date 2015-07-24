@@ -1,48 +1,65 @@
-var TitanCastApplication = function(appName, appDesc, appCastURL, icon){
+var TitanCastApplication = function(appName, appDesc, appCastURL, icon, cb) {
 
     this.appName = appName;
     this.appDesc = appDesc;
     this.appCastURL = appCastURL;
+    cb = cb || function() {};
 
-    if(icon)
-      this.icon = icon.image ? icon.image : icon;
-    else
-      this.icon = "#none#";
+    this.setIcon(icon, cb);
 
 };
 
-TitanCastApplication.prototype.createDevice = function(uri, options){
+TitanCastApplication.prototype.createDevice = function(uri, options) {
     return new TitanCastDevice(uri, this, options);
 }
 
-TitanCastApplication.prototype.getIcon = function(){
-    return this.icon;
-}
+TitanCastApplication.prototype.setIcon = function(icon, cb) {
 
-TitanCastApplication.prototype.setIcon = function(icon){
-    this.icon = icon;
-}
+    if (icon) {
 
-TitanCastApplication.prototype.getAppName = function(){
-    return this.appName;
-}
+        var _app = this;
 
-TitanCastApplication.prototype.setAppName = function(appName){
-    this.appName = appName;
-}
+        if (icon instanceof Image) {
 
-TitanCastApplication.prototype.getAppDesc = function(){
-    return this.appDesc;
-}
+            //image
+            if (icon.complete) {
 
-TitanCastApplication.prototype.setAppDesc = function(appDesc){
-    this.appDesc = appDesc;
-}
+                TitanCastUtils.base64Loaded(icon, function(data) {
+                    _app.icon = data;
+                    cb();
+                });
 
-TitanCastApplication.prototype.getAppCastURL = function(){
-    return this.appCastURL;
-}
+            } else {
+                TitanCastUtils.base64Img(icon, function(data) {
+                    _app.icon = data;
+                    cb();
+                });
 
-TitanCastApplication.prototype.setAppCastURL = function(appCastURL){
-    this.appCastURL = appCastURL;
+            }
+
+        } else if (typeof icon === 'string' || icon instanceof String) {
+
+            if (icon.charAt(0) === "@") {
+
+                TitanCastUtils.base64URL(icon.substr(1), function(data) {
+                    _app.icon = data.substr(22);
+                    cb();
+                });
+
+            } else {
+
+                //an image that is base64'd already (hopefully).
+                this.icon = icon;
+
+            }
+
+        } else {
+            this.icon = icon;
+        }
+
+    } else {
+        //no icon was provided
+        this.icon = "#none#";
+    }
+
 }
