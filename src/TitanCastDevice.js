@@ -24,7 +24,7 @@ var TitanCastDevice = function(uri, application, options) {
     }
 
     //websocket stuffs
-    this.websocket = new WebSocket("ws://" + this.uri + ":" + this.port);
+    this.websocket = new WebSocket("wss://" + this.uri + ":" + this.port);
 
     this.debugging = options.debugging || TitanCastAPI.globalOptions.debugging;
 
